@@ -92,7 +92,8 @@ class Scatter2D():
             xi_j = 3. * pi / 4. / 2. ** j
             for l in range(self.L):
 
-                filter_dict['j:%s,l:%s' %(j,l)] = self.morlet_2d(xi_j, j, l)
+                filter_dict['psi,j:%s,l:%s' %(j,l)] = self.morlet_2d(xi_j, j, l)
+                filter_dict['phi,j:%s,l:%s' %(j,l)] = self.gabor_2d(0., self.J-1, l)
 
         return filter_dict
 
@@ -239,7 +240,8 @@ class Scatter3D():
                 for l_phi in range(self.L):
 
 
-                    filter_dict['j:%s,l_theta:%s,l_phi:%s' %(j,l_theta,l_phi)] = self.morlet_3d(xi_j, j, l_theta, l_phi)
+                    filter_dict['psi,j:%s,l_theta:%s,l_phi:%s' %(j,l_theta,l_phi)] = self.morlet_3d(xi_j, j, l_theta, l_phi)
+                    filter_dict['phi,j:%s,l_theta:%s,l_phi:%s' %(j,l_theta,l_phi)]  = self.gabor_2d(0., self.J-1, l_theta, l_phi)
 
         return filter_dict
 
