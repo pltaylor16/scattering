@@ -110,6 +110,13 @@ class Scatter2D():
         return filters
 
 
+    def subsample_fourier_2d(self, data_batch, k):
+        #k will be 2^j and and x will be (batch_size, M, M)
+        batch_size = np.shape(data_batch)[0]
+        y = tf.reshape(data_batch, shape = (batch_size, k, data_batch.shape[1] // k, k, data_batch.shape[2] // k))
+        return tf.math.reduce_mean(y, axis = (1,3))
+
+
 
     def compute_coefs(self, data_batch, filters):
 
