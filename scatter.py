@@ -260,13 +260,6 @@ class Scatter3D():
 
 
 
-'''
-def subsample_fourier_2d(x,k):
-    #k will be 2^j and and x will be (batch_size, M, M)
-    y = tf.reshape(batch_size, k, x.shape[1] // k, k, x.shape[2] // k)
-    return tf.math.mean_reduce(axis = (1,3))
-
-'''
 
 
 
