@@ -3,6 +3,7 @@ import numpy as np
 import tensorflow as tf
 from math import pi as pi
 from math import log2 as log2
+from scipy.fft import fft2, ifft2
 
 
 
@@ -20,6 +21,8 @@ class Scatter2D():
             print ('ERROR: 2^J should be greater than M!')
 
 
+    #deprecated
+    '''
     def get_js(self):
         mx = int(log2(self.M))
         self.js = list(range(mx+1))
@@ -29,12 +32,16 @@ class Scatter2D():
         self.thetas = []
         for l in range(self.L):
             self.thetas += [l/self.L * pi]
+    '''
 
 
+    ###################################
+    ### Wavelet functions #############
+    ###################################
 
-    def gabor_2d(self, xi, j, l):
 
-        theta = self.thetas[l]
+    def gabor_2d(self, xi, j, theta):
+
 
         #rotations
         R = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]], np.float64)
@@ -68,11 +75,11 @@ class Scatter2D():
 
 
 
-    def morlet_2d(self, xi, j, l):
+    def morlet_2d(self, xi, j, theta):
 
         
-        val = self.gabor_2d(xi, j, l)
-        modulus = self.gabor_2d(0, j, l)
+        val = self.gabor_2d(xi, j, theta)
+        modulus = self.gabor_2d(0, j, theta)
         K = np.sum(val) / np.sum(modulus)
   
 
@@ -81,38 +88,77 @@ class Scatter2D():
         return mor 
 
 
-    def generate_filters(self):
-        filter_dict = {}
-        self.get_js()
-        self.get_thetas()
+
+    def periodize_filter_fft(x, res):
+        #taken directly from kymatio filter_bank.py
+        """
+            Parameters
+            ----------
+            x : numpy array
+                signal to periodize in Fourier
+            res :
+                resolution to which the signal is cropped.
+
+            Returns
+            -------
+            crop : numpy array
+                It returns a crop version of the filter, assuming that
+                 the convolutions will be done via compactly supported signals.
+        """
+        M = x.shape[0]
+        N = x.shape[1]
+
+        crop = np.zeros((M // 2 ** res, N // 2 ** res), x.dtype)
+
+        mask = np.ones(x.shape, np.float32)
+        len_x = int(M * (1 - 2 ** (-res)))
+        start_x = int(M * 2 ** (-res - 1))
+        len_y = int(N * (1 - 2 ** (-res)))
+        start_y = int(N * 2 ** (-res - 1))
+        mask[start_x:start_x + len_x,:] = 0
+        mask[:, start_y:start_y + len_y] = 0
+        x = np.multiply(x,mask)
+
+        for k in range(int(M / 2 ** res)):
+            for l in range(int(N / 2 ** res)):
+                for i in range(int(2 ** res)):
+                    for j in range(int(2 ** res)):
+                        crop[k, l] += x[k + i * int(M / 2 ** res), l + j * int(N / 2 ** res)]
+
+        return crop
 
 
-        for j in self.js:
-            #hard-code this for now
-            xi_j = 3. * pi / 4. / 2. ** j
-            for l in range(self.L):
+    def filter_bank(self):
+        filters = {}
+        filters['psi'] = []
 
-                filter_dict['psi,j:%s,l:%s' %(j,l)] = self.morlet_2d(xi_j, j, l)
-                filter_dict['phi,j:%s,l:%s' %(j,l)] = self.gabor_2d(0., self.J-1, l)
+        for j in range(J):
+            for theta in range(L):
+                psi = {'levels': [], 'j': j, 'theta': theta}
+                psi_signal = self.morlet_2d(3.0 / 4.0 * np.pi /2**j, j, (int(L-L/2-1)-theta) * np.pi / L)
+                psi_signal_fourier = np.real(fft2(psi_signal))
+                # drop the imaginary part, it is zero anyway
+                psi_levels = []
+                for res in range(min(j + 1, max(self.J - 1, 1))):
+                    psi_levels.append(periodize_filter_fft(psi_signal_fourier, res))
+                psi['levels'] = psi_levels
+                filters['psi'].append(psi)
 
-        return filter_dict
+        phi_signal = self.gabor_2d(0, self.J-1, 0)
+        phi_signal_fourier = np.real(fft2(phi_signal))
+        # drop the imaginary part, it is zero anyway
+        filters['phi'] = {'levels': [], 'j': self.J}
+        for res in range(self.J):
+            filters['phi']['levels'].append(
+                periodize_filter_fft(phi_signal_fourier, res))
+
+        return filters
 
 
-    def get_filters_tensor(self):
-        
-        filters_np_phi = np.zeros((self.J, self.L, self.M, self.M), dtype=np.complex64)
-        filters_np_psi = np.zeros((self.J, self.L, self.M, self.M), dtype=np.complex64)
-        for j in range(self.J):
-            for l in range(self.L):
-                filters_np_phi[j,l,:,:] = self.generate_filters()['phi,j:%s,l:%s' %(j,l)]
-                filters_np_psi[j,l,:,:] = self.generate_filters()['psi,j:%s,l:%s' %(j,l)]
+    ###################################
+    ### Utility functions #############
+    ###################################
 
-
-        phi = tf.convert_to_tensor(filters_np_phi, dtype= tf.complex64)
-        psi = tf.convert_to_tensor(filters_np_psi, dtype= tf.complex64)
-
-        
-        return phi, psi
 
 
     #utility function
@@ -157,14 +203,24 @@ class Scatter2D():
     def ifft(self, x):
         return tf.signal.ifft2d(x)
 
+    def cdgmm(self, A, B):
+        return A * B 
+
     #utility function
     #not sure I will need this
     def stack(self, arrays):
         return tf.stack(arrays, axis=-3)
 
 
-    def compute_coefs(self, data_batch, filters):
+    ###################################
+    ###compute the final output########
+    ###################################
+
+
+    def compute_coefs(self, phi, psi, max_order, out_type = 'array'):
+        
         #taken from /core/scattering2d.py
+
 
         # Define lists for output.
         out_S_0, out_S_1, out_S_2 = [], [], []
@@ -178,14 +234,113 @@ class Scatter2D():
         U_r_0 = self.rfft(U_r)
 
         #first low pass filter
-        U_1_C = ...
+        U_1_C = self.cdgmm(U_0_c, phi['levels'][0])
         U_1_C = self.subsample_fourier_2d(U_1_C, 2 ** self.J)
 
         S_0 = self.irfft(U_1_C)
         S_0 = self.unpad(S_0)
 
+        out_S_0.append({'coef': S_0,
+                'j': (),
+                'n': (),
+                'theta': ()})
 
 
+        for n1 in range(len(psi)):
+                j1 = psi[n1]['j']
+                theta1 = psi[n1]['theta']
+
+                U_1_c = self.cdgmm(U_0_c, psi[n1]['levels'][0])
+                if j1 > 0:
+                    U_1_c = self.subsample_fourier(U_1_c, k=2 ** j1)
+                U_1_c = self.ifft(U_1_c)
+                U_1_c = self.modulus(U_1_c)
+                U_1_c = self.rfft(U_1_c)
+
+                # Second low pass filter
+                S_1_c = self.cdgmm(U_1_c, phi['levels'][j1])
+                S_1_c = self.subsample_fourier(S_1_c, k=2 ** (self.J - j1))
+
+                S_1_r = self.irfft(S_1_c)
+                S_1_r = self.unpad(S_1_r)
+
+                out_S_1.append({'coef': S_1_r,
+                                'j': (j1,),
+                                'n': (n1,),
+                                'theta': (theta1,)})
+
+                if max_order < 2:
+                    continue
+                for n2 in range(len(psi)):
+                    j2 = psi[n2]['j']
+                    theta2 = psi[n2]['theta']
+
+                    if j2 <= j1:
+                        continue
+
+                    U_2_c = self.cdgmm(U_1_c, psi[n2]['levels'][j1])
+                    U_2_c = self.subsample_fourier(U_2_c, k=2 ** (j2 - j1))
+                    U_2_c = self.ifft(U_2_c)
+                    U_2_c = self.modulus(U_2_c)
+                    U_2_c = self.rfft(U_2_c)
+
+                    # Third low pass filter
+                    S_2_c = self.cdgmm(U_2_c, phi['levels'][j2])
+                    S_2_c = self.subsample_fourier(S_2_c, k=2 ** (self.J - j2))
+
+                    S_2_r = self.irfft(S_2_c)
+                    S_2_r = self.unpad(S_2_r)
+
+                    out_S_2.append({'coef': S_2_r,
+                                    'j': (j1, j2),
+                                    'n': (n1, n2),
+                                    'theta': (theta1, theta2)})
+
+            out_S = []
+            out_S.extend(out_S_0)
+            out_S.extend(out_S_1)
+            out_S.extend(out_S_2)
+
+            if out_type == 'array':
+                out_S = stack([x['coef'] for x in out_S])
+
+            return out_S
+
+    #deprecated
+    '''
+    def generate_filters(self):
+        filter_dict = {}
+        self.get_js()
+        self.get_thetas()
+
+
+        for j in self.js:
+            #hard-code this for now
+            xi_j = 3. * pi / 4. / 2. ** j
+            for l in range(self.L):
+
+                filter_dict['psi,j:%s,l:%s' %(j,l)] = self.morlet_2d(xi_j, j, l)
+                filter_dict['phi,j:%s,l:%s' %(j,l)] = self.gabor_2d(0., self.J-1, l)
+
+        return filter_dict
+
+
+    def get_filters_tensor(self):
+        
+        filters_np_phi = np.zeros((self.J, self.L, self.M, self.M), dtype=np.complex64)
+        filters_np_psi = np.zeros((self.J, self.L, self.M, self.M), dtype=np.complex64)
+        for j in range(self.J):
+            for l in range(self.L):
+                filters_np_phi[j,l,:,:] = self.generate_filters()['phi,j:%s,l:%s' %(j,l)]
+                filters_np_psi[j,l,:,:] = self.generate_filters()['psi,j:%s,l:%s' %(j,l)]
+
+
+        phi = tf.convert_to_tensor(filters_np_phi, dtype= tf.complex64)
+        psi = tf.convert_to_tensor(filters_np_psi, dtype= tf.complex64)
+
+        
+        return phi, psi
+    '''
 
 
 
