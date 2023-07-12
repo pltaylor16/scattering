@@ -146,6 +146,7 @@ class Scatter2D():
 
 
 
+
 class Scatter3D():
     
     def __init__(self, J, L, M, slant1, slant2, max_order = 2):
