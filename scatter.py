@@ -110,6 +110,7 @@ class Scatter2D():
         return filters
 
 
+    #utility function
     def subsample_fourier_2d(self, data_batch, k):
         #k will be 2^j and and x will be (batch_size, M, M)
         batch_size = np.shape(data_batch)[0]
@@ -117,12 +118,18 @@ class Scatter2D():
         return tf.math.reduce_mean(y, axis = (1,3))
 
 
+    #utility function
     def compute_padding(self):
         #taken from the kymatio utils.py except I am assuming M = N
         M_padded = ((self.M + 2 ** self.J) // 2 ** self.J + 1) * 2 ** self.J
         N_padded = ((self.M + 2 ** self.J) // 2 ** self.J + 1) * 2 ** self.J
         return M_padded, N_padded
 
+
+    #utility function
+    def unpad(self, x):
+        #taken from numpy_backend.py in kymatio
+        return x[..., 1:-1, 1:-1]
 
 
 
