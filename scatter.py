@@ -142,7 +142,15 @@ class Scatter2D():
 
     #utility function
     def rfft(self, x):
-        return 
+        return tf.signal.fft2d(tf.cast(x, tf.complex64))
+
+    #utility function
+    def irfft(self, x):
+        return tf.math.real(tf.signal.ifft2d(x))
+
+    #utility function
+    def ifft(self, x):
+        return tf.signal.ifft2d(x)
 
     #utility function
     #not sure I will need this
