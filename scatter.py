@@ -264,7 +264,6 @@ class Scatter2D():
 
         #back to code
         U_r = self.pad(x, pad_size, input_size)
-        U_r_0 = self.rfft(U_r)
 
         U_0_c = self.rfft(U_r)
 
