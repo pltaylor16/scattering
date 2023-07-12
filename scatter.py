@@ -9,13 +9,12 @@ from scipy.fft import fft2, ifft2
 
 class Scatter2D():
     
-    def __init__(self, J, L, M, slant, max_order = 2):
+    def __init__(self, J, L, M, slant):
 
         self.J = J
         self.L = L 
         self.M = M 
         self.slant = slant
-        self.max_order =max_order
 
         if 2 ** self.J > self.M:
             print ('ERROR: 2^J should be greater than M!')
@@ -89,7 +88,7 @@ class Scatter2D():
 
 
 
-    def periodize_filter_fft(x, res):
+    def periodize_filter_fft(self, x, res):
         #taken directly from kymatio filter_bank.py
         """
             Parameters
@@ -132,15 +131,15 @@ class Scatter2D():
         filters = {}
         filters['psi'] = []
 
-        for j in range(J):
-            for theta in range(L):
+        for j in range(self.J):
+            for theta in range(self.L):
                 psi = {'levels': [], 'j': j, 'theta': theta}
-                psi_signal = self.morlet_2d(3.0 / 4.0 * np.pi /2**j, j, (int(L-L/2-1)-theta) * np.pi / L)
+                psi_signal = self.morlet_2d(3.0 / 4.0 * np.pi /2**j, j, (int(self.L-self.L/2-1)-theta) * np.pi / self.L)
                 psi_signal_fourier = np.real(fft2(psi_signal))
                 # drop the imaginary part, it is zero anyway
                 psi_levels = []
                 for res in range(min(j + 1, max(self.J - 1, 1))):
-                    psi_levels.append(periodize_filter_fft(psi_signal_fourier, res))
+                    psi_levels.append(self.periodize_filter_fft(psi_signal_fourier, res))
                 psi['levels'] = psi_levels
                 filters['psi'].append(psi)
 
@@ -150,7 +149,7 @@ class Scatter2D():
         filters['phi'] = {'levels': [], 'j': self.J}
         for res in range(self.J):
             filters['phi']['levels'].append(
-                periodize_filter_fft(phi_signal_fourier, res))
+                self.periodize_filter_fft(phi_signal_fourier, res))
 
         return filters
 
@@ -187,8 +186,8 @@ class Scatter2D():
     def pad(self, x, pad_size):
         '''adopted from numpy backend'''
         paddings = paddings = ((0, 0),)      
-        paddings += ((self.pad_size[0], self.pad_size[1]), (self.pad_size[2], \
-            self.pad_size[3]))
+        paddings += ((pad_size[0], pad_size[1]), (pad_size[2], \
+            pad_size[3]))
         return tf.pad(x, paddings, mode ='reflect')
 
     #utility function
@@ -217,7 +216,7 @@ class Scatter2D():
     ###################################
 
 
-    def compute_coefs(self, phi, psi, max_order, out_type = 'array'):
+    def compute_coefs(self, x, phi, psi, max_order, out_type = 'array'):
         
         #taken from /core/scattering2d.py
 
@@ -227,7 +226,7 @@ class Scatter2D():
 
         #this is mine...
         M_padded, N_padded = self.compute_padding()
-        pad_size = [(M_padded - self.M) // 2, (M_padded - self.M+1) // 2, (self._N_padded - self.M) // 2, (self._N_padded - self.M + 1) // 2]
+        pad_size = [(M_padded - self.M) // 2, (M_padded - self.M+1) // 2, (M_padded - self.M) // 2, (M_padded - self.M + 1) // 2]
 
         #back to code
         U_r = self.pad(x, pad_size)
