@@ -132,6 +132,15 @@ class Scatter2D():
         return x[..., 1:-1, 1:-1]
 
 
+    #utility function
+    def pad(self, x, pad_size, input_size):
+        '''adopted from numpy backend'''
+        paddings = paddings = ((0, 0),)      
+        paddings += ((self.pad_size[0], self.pad_size[1]), (self.pad_size[2], \
+            self.pad_size[3]))
+        return tf.pad(x, paddings, mode ='reflect')
+
+
 
     def compute_coefs(self, data_batch, filters):
 
