@@ -117,6 +117,14 @@ class Scatter2D():
         return tf.math.reduce_mean(y, axis = (1,3))
 
 
+    def compute_padding(self):
+        #taken from the kymatio utils.py except I am assuming M = N
+        M_padded = ((self.M + 2 ** self.J) // 2 ** self.J + 1) * 2 ** self.J
+        N_padded = ((self.M + 2 ** self.J) // 2 ** self.J + 1) * 2 ** self.J
+        return M_padded, N_padded
+
+
+
 
     def compute_coefs(self, data_batch, filters):
 
