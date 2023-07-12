@@ -140,12 +140,25 @@ class Scatter2D():
             self.pad_size[3]))
         return tf.pad(x, paddings, mode ='reflect')
 
+    #utility function
+    #not sure I will need this
+    def stack(self, arrays):
+        return tf.stack(arrays, axis=-3)
 
 
     def compute_coefs(self, data_batch, filters):
+        # Define lists for output.
+        out_S_0, out_S_1, out_S_2 = [], [], []
 
-        '''filter has dimesnions (J,L,M,M), data_batch has dimesnions \
-        (batch_size,M,M)'''
+
+
+
+    
+    '''
+    def compute_coefs(self, data_batch, filters):
+
+        #filter has dimesnions (J,L,M,M), data_batch has dimesnions \
+        (batch_size,M,M)
 
 
         #convert input to complex tensor
@@ -164,7 +177,8 @@ class Scatter2D():
         S1 = tf.math.reduce_mean(M1, axis = (3,4))
 
         return S1
-
+    '''
+    
 
 
 
