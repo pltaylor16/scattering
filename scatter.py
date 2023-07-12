@@ -183,12 +183,45 @@ class Scatter2D():
 
 
     #utility function
+
+    ''' 
+    #this numpy version doesn't work
     def pad(self, x, pad_size):
-        '''adopted from numpy backend'''
-        paddings = paddings = ((0, 0),)      
+        #adopted from numpy backend
+        paddings = ((0, 0),)      
         paddings += ((pad_size[0], pad_size[1]), (pad_size[2], \
             pad_size[3]))
         return tf.pad(x, paddings, mode ='reflect')
+    '''
+
+    #utility function
+    def pad(self, x, pad_size, input_size):
+        pad_size = list(pad_size)
+
+        # Clone to avoid passing on modifications.
+        new_pad_size = list(pad_size)
+
+        # This handles the case where the padding is equal to the image size.
+        if pad_size[0] == input_size[0]:
+            new_pad_size[0] -= 1
+            new_pad_size[1] -= 1
+        if pad_size[2] == input_size[1]:
+            new_pad_size[2] -= 1
+            new_pad_size[3] -= 1
+
+        paddings = [[0, 0]] * len(x.shape[:-2])
+        paddings += [[new_pad_size[0], new_pad_size[1]], [new_pad_size[2], new_pad_size[3]]]
+
+        x_padded = tf.pad(x, paddings, mode="REFLECT")
+
+        # Again, special handling for when padding is the same as image size.
+        if pad_size[0] == input_size[0]:
+            x_padded = tf.concat([tf.expand_dims(x_padded[..., 1, :], axis=-2), x_padded, tf.expand_dims(x_padded[..., x_padded.shape[-2] -2, :], axis=-2)], axis=-2)
+        if pad_size[2] == input_size[1]:
+            x_padded = tf.concat([tf.expand_dims(x_padded[..., :, 1], axis=-1), x_padded, tf.expand_dims(x_padded[..., :,  x_padded.shape[-1]-2], axis=-1)], axis=-1)
+
+        return x_padded
+
 
     #utility function
     def rfft(self, x):
@@ -227,10 +260,13 @@ class Scatter2D():
         #this is mine...
         M_padded, N_padded = self.compute_padding()
         pad_size = [(M_padded - self.M) // 2, (M_padded - self.M+1) // 2, (M_padded - self.M) // 2, (M_padded - self.M + 1) // 2]
+        input_size = [self.M, self.M]
 
         #back to code
-        U_r = self.pad(x, pad_size)
+        U_r = self.pad(x, pad_size, input_size)
         U_r_0 = self.rfft(U_r)
+
+        U_0_c = self.rfft(U_r)
 
         #first low pass filter
         U_1_C = self.cdgmm(U_0_c, phi['levels'][0])
