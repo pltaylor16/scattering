@@ -133,12 +133,16 @@ class Scatter2D():
 
 
     #utility function
-    def pad(self, x, pad_size, input_size):
+    def pad(self, x, pad_size):
         '''adopted from numpy backend'''
         paddings = paddings = ((0, 0),)      
         paddings += ((self.pad_size[0], self.pad_size[1]), (self.pad_size[2], \
             self.pad_size[3]))
         return tf.pad(x, paddings, mode ='reflect')
+
+    #utility function
+    def rfft(self, x):
+        return 
 
     #utility function
     #not sure I will need this
@@ -147,8 +151,19 @@ class Scatter2D():
 
 
     def compute_coefs(self, data_batch, filters):
+        #taken from /core/scattering2d.py
+
         # Define lists for output.
         out_S_0, out_S_1, out_S_2 = [], [], []
+
+        #this is mine...
+        M_padded, N_padded = self.compute_padding()
+        pad_size = [(M_padded - self.M) // 2, (M_padded - self.M+1) // 2, (self._N_padded - self.M) // 2, (self._N_padded - self.M + 1) // 2]
+
+        #back to code
+        U_r = self.pad(x, pad_size)
+        U_r_0 = tf.
+
 
 
 
