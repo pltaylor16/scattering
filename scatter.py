@@ -100,14 +100,19 @@ class Scatter2D():
 
     def get_filters_tensor(self):
         
-        filters_np = np.zeros((self.J, self.L, self.M, self.M), dtype=np.complex64)
+        filters_np_phi = np.zeros((self.J, self.L, self.M, self.M), dtype=np.complex64)
+        filters_np_psi = np.zeros((self.J, self.L, self.M, self.M), dtype=np.complex64)
         for j in range(self.J):
             for l in range(self.L):
-                filters_np[j,l,:,:] = self.generate_filters()['j:%s,l:%s' %(j,l)]
+                filters_np_phi[j,l,:,:] = self.generate_filters()['phi,j:%s,l:%s' %(j,l)]
+                filters_np_psi[j,l,:,:] = self.generate_filters()['psi,j:%s,l:%s' %(j,l)]
 
-        filters = tf.convert_to_tensor(filters_np, dtype= tf.complex64)
+
+        phi = tf.convert_to_tensor(filters_np_phi, dtype= tf.complex64)
+        psi = tf.convert_to_tensor(filters_np_psi, dtype= tf.complex64)
+
         
-        return filters
+        return phi, psi
 
 
     #utility function
@@ -170,7 +175,15 @@ class Scatter2D():
 
         #back to code
         U_r = self.pad(x, pad_size)
-        U_r_0 = tf.
+        U_r_0 = self.rfft(U_r)
+
+        #first low pass filter
+        U_1_C = ...
+        U_1_C = self.subsample_fourier_2d(U_1_C, 2 ** self.J)
+
+        S_0 = self.irfft(U_1_C)
+        S_0 = self.unpad(S_0)
+
 
 
 
