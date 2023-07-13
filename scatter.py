@@ -38,7 +38,7 @@ class Scatter2D():
     ### Wavelet functions #############
     ###################################
 
-
+    '''
     def gabor_2d(self, xi, j, theta):
 
 
@@ -49,7 +49,7 @@ class Scatter2D():
 
         #covariances
         sigma = 0.8 * 2. ** j
-        Sigma_base = np.array([[sigma ** 2, 0], [0, sigma ** 2 / self.slant ** 2]])
+        Sigma_base = np.array([[1., 0], [0, self.slant ** 2]]) * 1. / (sigma ** 2.) 
         Sigma = np.dot(R, np.dot(Sigma_base, R_inv))
         #Sigma_inv = np.linalg.inv(Sigma)
 
@@ -58,19 +58,96 @@ class Scatter2D():
         k_0= xi * np.dot(R,np.array([0,1]))
 
         #normalising factor
-        norm = np.linalg.det(Sigma)
+        #norm = np.linalg.det(Sigma)
 
         #gabor on the grid
         gab = np.zeros((self.M, self.M), dtype = np.complex64)
-        k_0 =  k_0 / (2 * pi)
+        k_0 =  k_0 / (2. * pi)
         for kx in range(self.M):
             for ky in range(self.M):
                 k = np.array([kx,ky]) / (2. * pi)
-                exponent = - np.dot((k - k_0).T, np.dot(Sigma,(k-k_0))) /2
+                exponent = - np.dot((k - k_0).T, np.dot(Sigma,(k-k_0))) / 2. 
                 gab[kx,ky] = np.exp(exponent)
+
+        #gab *= norm ** -0.5
    
 
         return gab 
+        '''
+
+    '''
+    def gabor_2d(self, xi, j, theta):
+
+        #rotations
+        R = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]], np.float64)
+        R_inv = np.array([[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]], np.float64)
+
+        #covariances
+        sigma = 0.8 * 2. ** j
+        Sigma_base = np.array([[1., 0], [0, self.slant ** 2]]) * sigma ** 2. 
+        Sigma = np.dot(R, np.dot(Sigma_base, R_inv))
+        Sigma_inv = np.linalg.inv(Sigma)
+
+        #k_0_vector
+        k_0= xi * np.dot(R,np.array([0,1]))
+
+
+        #normalising factor
+        norm = np.linalg.det(Sigma) ** 0.5 
+
+        n = self.M
+        #x = np.linspace(-n/2, n/2, self.M)
+        x = np.linspace(-n/2, n/2, self.M)
+
+        y = x.copy()
+        
+
+        gab = np.zeros((self.M, self.M), dtype = np.complex64)
+        for i in range(self.M):
+            for j in range(self.M):
+                x_vec = np.array([x[i],y[j]])
+                exponent = -np.dot(x_vec.T, np.dot(Sigma_inv,x_vec)) / 2.
+                exp1 = np.exp(exponent)
+      
+                exp2 = np.exp(1.j * np.dot(k_0, x_vec))
+
+
+                gab[i,j] = exp1 * exp2
+
+        return 1./norm * gab
+    '''
+
+
+    def gabor_2d(self, xi, j, theta):
+        
+        #redfine variables
+        n = self.M 
+        sigma =  0.8 * 2. ** j
+        freq = xi
+
+        #gpt function
+        #x, y = np.meshgrid(np.arange(-n/2, n/2), np.arange(-n/2, n/2))
+        x, y = np.meshgrid(np.arange(-n/2, n/2), np.arange(-n/2, n/2))
+
+        x_theta = x * np.cos(theta) + y * np.sin(theta)
+        y_theta = -x * np.sin(theta) + y * np.cos(theta)
+
+        # Gaussian window
+        g = np.exp(-(x_theta**2 + y_theta**2) / (2 * sigma**2))
+
+        # Complex sinusoid
+        c = np.exp(1j * 2 * np.pi * freq * x_theta)
+
+        # 2D Gabor wavelet
+        w = g * c
+
+        return w
+        
+
+
+
+
+
 
 
 
