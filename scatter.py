@@ -173,7 +173,7 @@ class Scatter2D():
 
 
     #utility function
-    def subsample_fourier_2d(self, data_batch, k):
+    def subsample_fourier(self, data_batch, k):
         #k will be 2^j and and x will be (batch_size, M, M)
         batch_size = np.shape(data_batch)[0]
         y = tf.reshape(data_batch, shape = (batch_size, k, data_batch.shape[1] // k, k, data_batch.shape[2] // k))
@@ -255,6 +255,9 @@ class Scatter2D():
     def stack(self, arrays):
         return tf.stack(arrays, axis=-3)
 
+    def modulus(self, x):
+        return tf.abs(x)
+
 
     ###################################
     ###compute the final output########
@@ -276,16 +279,16 @@ class Scatter2D():
 
         #back to code
         U_r = self.pad(x, pad_size, input_size)
-        print ('U_r:', np.shape(U_r))
+        #print ('U_r:', np.shape(U_r))
 
         U_0_c = self.rfft(U_r)
 
-        print ('U_0_c:', np.shape(U_r))
-        print ('phi:', np.shape(phi['levels'][0]))
+        #print ('U_0_c:', np.shape(U_r))
+        #print ('phi:', np.shape(phi['levels'][0]))
 
         #first low pass filter
         U_1_C = self.cdgmm(U_0_c, phi['levels'][0])
-        U_1_C = self.subsample_fourier_2d(U_1_C, 2 ** self.J)
+        U_1_C = self.subsample_fourier(U_1_C, 2 ** self.J)
 
         S_0 = self.irfft(U_1_C)
         S_0 = self.unpad(S_0)
@@ -352,7 +355,7 @@ class Scatter2D():
         out_S.extend(out_S_2)
 
         if out_type == 'array':
-            out_S = stack([x['coef'] for x in out_S])
+            out_S = self.stack([x['coef'] for x in out_S])
 
         return out_S
 
