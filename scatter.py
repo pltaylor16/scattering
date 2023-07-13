@@ -135,6 +135,7 @@ class Scatter2D():
             for theta in range(self.L):
                 psi = {'levels': [], 'j': j, 'theta': theta}
                 psi_signal = self.morlet_2d(3.0 / 4.0 * np.pi /2**j, j, (int(self.L-self.L/2-1)-theta) * np.pi / self.L)
+                print ('psi signal:', psi_signal)
                 psi_signal_fourier = np.real(fft2(psi_signal))
                 # drop the imaginary part, it is zero anyway
                 psi_levels = []
