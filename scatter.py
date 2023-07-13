@@ -286,6 +286,9 @@ class Scatter2D():
         #print ('U_0_c:', np.shape(U_r))
         #print ('phi:', np.shape(phi['levels'][0]))
 
+        #print ('U_0_c:', U_0_c)
+        
+
         #first low pass filter
         U_1_C = self.cdgmm(U_0_c, phi['levels'][0])
         U_1_C = self.subsample_fourier(U_1_C, 2 ** self.J)
@@ -297,6 +300,8 @@ class Scatter2D():
                 'j': (),
                 'n': (),
                 'theta': ()})
+
+        print ('out_S_0:', out_S_0)
 
 
         for n1 in range(len(psi)):
