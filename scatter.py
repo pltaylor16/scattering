@@ -153,6 +153,18 @@ class Scatter2D():
 
         return filters
 
+    #this is my own version to get dimensions right
+    def padded_filter_bank(self):
+        #this is adopted from base_frontend.py in kymatio
+        M = self.M
+        M_padded, N_padded = self.compute_padding()
+        self.M = M_padded
+        filters = self.filter_bank()
+        #reset M after computing the filters with the correct padding
+        self.M = M
+
+        return filters
+
 
     ###################################
     ### Utility functions #############
@@ -264,8 +276,12 @@ class Scatter2D():
 
         #back to code
         U_r = self.pad(x, pad_size, input_size)
+        print ('U_r:', np.shape(U_r))
 
         U_0_c = self.rfft(U_r)
+
+        print ('U_0_c:', np.shape(U_r))
+        print ('phi:', np.shape(phi['levels'][0]))
 
         #first low pass filter
         U_1_C = self.cdgmm(U_0_c, phi['levels'][0])
