@@ -118,34 +118,63 @@ class Scatter2D():
     '''
 
 
+   
+    
+
+    
     def gabor_2d(self, xi, j, theta):
+        """
+            Computes a 2D Gabor filter.
+            A Gabor filter is defined by the following formula in space:
+            psi(u) = g_{sigma}(u) e^(i xi^T u)
+            where g_{sigma} is a Gaussian envelope and xi is a frequency.
+
+            Parameters
+            ----------
+            M, N : int
+                spatial sizes
+            sigma : float
+                bandwidth parameter
+            xi : float
+                central frequency (in [0, 1])
+            theta : float
+                angle in [0, pi]
+            slant : float, optional
+                parameter which guides the elipsoidal shape of the morlet
+            offset : int, optional
+                offset by which the signal starts
+
+            Returns
+            -------
+            morlet_fft : ndarray
+                numpy array of size (M, N)
+        """
+
+        M, N = self.M, self.M
+        sigma = 0.8 * 2. ** j
+        slant = self.slant
+        offset = 0.
+
+
+        print ('params:', M, N, sigma, theta, xi, slant, offset)
+        gab = np.zeros((M, N), np.complex64)
+        R = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]], np.float32)
+        R_inv = np.array([[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]], np.float32)
+        D = np.array([[1, 0], [0, slant * slant]])
+        curv = np.dot(R, np.dot(D, R_inv)) / ( 2 * sigma * sigma)
+
+        for ex in [-2, -1, 0, 1, 2]:
+            for ey in [-2, -1, 0, 1, 2]:
+                [xx, yy] = np.mgrid[offset + ex * M:offset + M + ex * M, offset + ey * N:offset + N + ey * N]
+                arg = -(curv[0, 0] * np.multiply(xx, xx) + (curv[0, 1] + curv[1, 0]) * np.multiply(xx, yy) + curv[
+                    1, 1] * np.multiply(yy, yy)) + 1.j * (xx * xi * np.cos(theta) + yy * xi * np.sin(theta))
+                gab += np.exp(arg)
+
+        norm_factor = (2 * 3.1415 * sigma * sigma / slant)
+        gab /= norm_factor
+
+        return gab
         
-        #redfine variables
-        n = self.M 
-        sigma =  0.8 * 2. ** j
-        freq = xi
-
-        #gpt function
-        #x, y = np.meshgrid(np.arange(-n/2, n/2), np.arange(-n/2, n/2))
-        x, y = np.meshgrid(np.arange(-n/2, n/2), np.arange(-n/2, n/2))
-
-        x_theta = x * np.cos(theta) + y * np.sin(theta)
-        y_theta = -x * np.sin(theta) + y * np.cos(theta)
-
-        # Gaussian window
-        g = np.exp(-(x_theta**2 + y_theta**2) / (2 * sigma**2))
-
-        # Complex sinusoid
-        c = np.exp(1j * 2 * np.pi * freq * x_theta)
-
-        # 2D Gabor wavelet
-        w = g * c
-
-        return w
-        
-
-
-
 
 
 
