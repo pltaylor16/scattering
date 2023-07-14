@@ -156,7 +156,7 @@ class Scatter2D():
         offset = 0.
 
 
-        print ('params:', M, N, sigma, theta, xi, slant, offset)
+        #print ('params:', M, N, sigma, theta, xi, slant, offset)
         gab = np.zeros((M, N), np.complex64)
         R = np.array([[np.cos(theta), -np.sin(theta)], [np.sin(theta), np.cos(theta)]], np.float32)
         R_inv = np.array([[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]], np.float32)
@@ -241,7 +241,7 @@ class Scatter2D():
             for theta in range(self.L):
                 psi = {'levels': [], 'j': j, 'theta': theta}
                 psi_signal = self.morlet_2d(3.0 / 4.0 * np.pi /2**j, j, (int(self.L-self.L/2-1)-theta) * np.pi / self.L)
-                print ('psi signal:', psi_signal)
+                #print ('psi signal:', psi_signal)
                 psi_signal_fourier = np.real(fft2(psi_signal))
                 # drop the imaginary part, it is zero anyway
                 psi_levels = []
@@ -408,7 +408,7 @@ class Scatter2D():
                 'n': (),
                 'theta': ()})
 
-        print ('out_S_0:', out_S_0)
+        #print ('out_S_0:', out_S_0) #passed
 
 
         for n1 in range(len(psi)):
@@ -433,6 +433,8 @@ class Scatter2D():
                             'j': (j1,),
                             'n': (n1,),
                             'theta': (theta1,)})
+            #print ('out_S_1:', out_S_1) #passed
+
 
             if max_order < 2:
                 continue
@@ -465,6 +467,8 @@ class Scatter2D():
         out_S.extend(out_S_0)
         out_S.extend(out_S_1)
         out_S.extend(out_S_2)
+
+        #print ('our_S:', len(out_S))
 
         if out_type == 'array':
             out_S = self.stack([x['coef'] for x in out_S])
