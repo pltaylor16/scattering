@@ -381,7 +381,7 @@ class Scatter3D():
 
 
 
-
+# Next step is to code up the Gabor wavelets in https://www.sciencedirect.com/science/article/pii/S0262885605000934
 
 
 
