@@ -375,13 +375,37 @@ class Scatter3D():
         self.L = L 
         self.M = M 
         self.slant1 = slant1
-        self.slant2 =slant2
+        self.slant2 = slant2
 
 
 
 
 
 # Next step is to code up the Gabor wavelets in https://www.sciencedirect.com/science/article/pii/S0262885605000934
+def gabor_3d(self, xi, j, theta, phi):
+
+    sigma = 0.8 * 2. ** j
+    M = self.M
+    slant1 = self.slant1
+    slant2 = self.slant2
+
+    gab = np.zeros((M, M, M), np.complex64)
+
+    D = np.array([[1, 0, 0], [0, slant1 * slant1, 0], [0, 0, slant2 * slant2]])
+
+    R = np.array([
+    [np.cos(phi) * np.cos(theta), -np.sin(phi), np.cos(phi) * np.sin(theta)],
+    [np.sin(phi) * np.cos(theta), np.cos(phi), np.sin(phi) * np.sin(theta)],
+    [-np.sin(theta), 0, np.cos(theta)]
+])
+
+    R_inv = np.linalg.inv(R)
+    curv = np.dot(R, np.dot(D, R_inv)) / ( 2 * sigma * sigma)
+
+
+
+
+    #now need to think about rotations
 
 
 
