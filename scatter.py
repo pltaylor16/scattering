@@ -432,7 +432,36 @@ class Scatter3D():
 
 
     def periodize_filter_fft(self, x, res):
-        pass
+        M = x.shape[0]
+        N, L = M, M
+
+        crop = np.zeros((M // 2 ** res, N // 2 ** res, L // 2 ** res), x.dtype)
+
+        mask = np.ones(x.shape, np.float32)
+        len_x = int(M * (1 - 2 ** (-res)))
+        start_x = int(M * 2 ** (-res - 1))
+        len_y = int(N * (1 - 2 ** (-res)))
+        start_y = int(N * 2 ** (-res - 1))
+        len_z = int(L * (1 - 2 ** (-res)))
+        start_z = int(L * 2 ** (-res - 1))
+        mask[start_x:start_x + len_x,:,:] = 0
+        mask[:, start_y:start_y + len_y,:] = 0
+        mask[:, :, start_z:start_z + len_z] = 0
+
+        x = np.multiply(x,mask)
+
+        for k in range(int(M / 2 ** res)):
+            for l in range(int(N / 2 ** res)):
+                for l2 in range(int(L / 2 ** res)):
+                    for i in range(int(2 ** res)):
+                        for j in range(int(2 ** res)):
+                            for j2 in range(int(2 ** res)):
+                                crop[k, l, l2] += x[k + i * int(M / 2 ** res), l + j * int(N / 2 ** res), l2 + int(L / 2 ** res)]
+
+        return crop
+
+
+
 
     def filter_bank(self):
         pass
@@ -513,4 +542,10 @@ class Scatter3D():
 
     def compute_coefs(self, x, phi, psi, max_order, out_type = 'array'):
         pass
+
+
+
+
+
+
 
