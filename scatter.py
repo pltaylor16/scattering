@@ -421,8 +421,8 @@ class Scatter3D():
     def morlet_3d(self, xi, j, theta, phi):
 
         
-        val = self.gabor_2d(xi, j, theta, phi)
-        modulus = self.gabor_2d(0, j, theta, phi)
+        val = self.gabor_3d(xi, j, theta, phi)
+        modulus = self.gabor_3d(0, j, theta, phi)
         K = np.sum(val) / np.sum(modulus)
   
 
@@ -473,7 +473,7 @@ class Scatter3D():
                     psi = {'levels': [], 'j': j, 'theta': theta, 'phi': phi}
                     #you are here....
                     #psi_signal = self.morlet_2d(3.0 / 4.0 * np.pi /2**j, j, (int(self.L-self.L/2-1)-theta) * np.pi / self.L)
-                    psi_signal = self.morlet_2d(3.0 / 4.0 * np.pi /2**j, j, (int(self.L-self.L/2-1)-theta) * np.pi / self.L, (int(self.L-self.L/2-1)-theta) * np.pi / self.L)
+                    psi_signal = self.morlet_3d(3.0 / 4.0 * np.pi /2**j, j, (int(self.L-self.L/2-1)-theta) * np.pi / self.L, (int(self.L-self.L/2-1)-theta) * np.pi / self.L)
 
 
                     psi_signal_fourier = np.real(fftn(psi_signal))
@@ -485,7 +485,7 @@ class Scatter3D():
                     filters['psi'].append(psi)
 
 
-        phi_signal = self.gabor_2d(0, self.J-1, 0, 0)
+        phi_signal = self.gabor_3d(0, self.J-1, 0, 0)
         phi_signal_fourier = np.real(fftn(phi_signal))
         # drop the imaginary part, it is zero anyway
         filters['phi'] = {'levels': [], 'j': self.J}
