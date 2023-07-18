@@ -459,7 +459,7 @@ class Scatter3D():
                     for i in range(int(2 ** res)):
                         for j in range(int(2 ** res)):
                             for j2 in range(int(2 ** res)):
-                                crop[k, l, l2] += x[k + i * int(M / 2 ** res), l + j * int(N / 2 ** res), l2 + int(L / 2 ** res)]
+                                crop[k, l, l2] += x[k + i * int(M / 2 ** res), l + j * int(N / 2 ** res), l2 + j2 * int(L / 2 ** res)]
 
         return crop
 
