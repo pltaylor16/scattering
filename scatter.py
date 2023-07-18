@@ -501,5 +501,13 @@ class Scatter3D():
 
     def modulus(self, x):
         return tf.abs(x)
+    
 
+    ###################################
+    ###compute the final output########
+    ###################################
+
+
+    def compute_coefs(self, x, phi, psi, max_order, out_type = 'array'):
+        pass
 
