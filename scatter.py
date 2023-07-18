@@ -403,9 +403,24 @@ def gabor_3d(self, xi, j, theta, phi):
     curv = np.dot(R, np.dot(D, R_inv)) / ( 2 * sigma * sigma)
 
 
+    for ex in [-2, -1, 0, 1, 2]:
+        for ey in [-2, -1, 0, 1, 2]:
+            for ez in [-2, -1, 0, 1, 2]:
+                [xx, yy, zz] = np.mgrid[ex * M:M + ex * M, ey * M:M + ey * M, ez * M:M + ez * M,]
+                vec = np.array([xx, yy, zz])
+                arg_real = np.dot(np.dot(vec.T, curv), vec)
+                arg_im = 1.j * (xx * xi * np.sin(theta) * np.cos(phi) + yy * xi * np.sin(theta) * np.sin(phi) + np.cos(theta))
+                arg = arg_real + arg_im
+                gab += np.exp(arg)
+
+    norm_factor = (2 * 3.14159 * sigma * sigma / (slant1 * slant2) ** 0.5)
+
+    return gab
 
 
-    #now need to think about rotations
+
+
+
 
 
 
