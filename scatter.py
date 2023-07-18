@@ -467,6 +467,7 @@ class Scatter3D():
         pass
 
 
+
     #this is my own version to get dimensions right
     def padded_filter_bank(self):
         #this is adopted from base_frontend.py in kymatio
