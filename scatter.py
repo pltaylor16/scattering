@@ -381,41 +381,54 @@ class Scatter3D():
 
 
 
-# Next step is to code up the Gabor wavelets in https://www.sciencedirect.com/science/article/pii/S0262885605000934
-def gabor_3d(self, xi, j, theta, phi):
+    # Next step is to code up the Gabor wavelets in https://www.sciencedirect.com/science/article/pii/S0262885605000934
+    def gabor_3d(self, xi, j, theta, phi):
 
-    sigma = 0.8 * 2. ** j
-    M = self.M
-    slant1 = self.slant1
-    slant2 = self.slant2
+        sigma = 0.8 * 2. ** j
+        M = self.M
+        slant1 = self.slant1
+        slant2 = self.slant2
 
-    gab = np.zeros((M, M, M), np.complex64)
+        gab = np.zeros((M, M, M), np.complex64)
 
-    D = np.array([[1, 0, 0], [0, slant1 * slant1, 0], [0, 0, slant2 * slant2]])
+        D = np.array([[1, 0, 0], [0, slant1 * slant1, 0], [0, 0, slant2 * slant2]])
 
-    R = np.array([
-    [np.cos(phi) * np.cos(theta), -np.sin(phi), np.cos(phi) * np.sin(theta)],
-    [np.sin(phi) * np.cos(theta), np.cos(phi), np.sin(phi) * np.sin(theta)],
-    [-np.sin(theta), 0, np.cos(theta)]
-])
+        R = np.array([
+        [np.cos(phi) * np.cos(theta), -np.sin(phi), np.cos(phi) * np.sin(theta)],
+        [np.sin(phi) * np.cos(theta), np.cos(phi), np.sin(phi) * np.sin(theta)],
+        [-np.sin(theta), 0, np.cos(theta)]
+    ])
 
-    R_inv = np.linalg.inv(R)
-    curv = np.dot(R, np.dot(D, R_inv)) / ( 2 * sigma * sigma)
+        R_inv = np.linalg.inv(R)
+        curv = np.dot(R, np.dot(D, R_inv)) / ( 2 * sigma * sigma)
 
 
-    for ex in [-2, -1, 0, 1, 2]:
-        for ey in [-2, -1, 0, 1, 2]:
-            for ez in [-2, -1, 0, 1, 2]:
-                [xx, yy, zz] = np.mgrid[ex * M:M + ex * M, ey * M:M + ey * M, ez * M:M + ez * M,]
-                vec = np.array([xx, yy, zz])
-                arg_real = np.dot(np.dot(vec.T, curv), vec)
-                arg_im = 1.j * (xx * xi * np.sin(theta) * np.cos(phi) + yy * xi * np.sin(theta) * np.sin(phi) + np.cos(theta))
-                arg = arg_real + arg_im
-                gab += np.exp(arg)
+        for ex in [-2, -1, 0, 1, 2]:
+            for ey in [-2, -1, 0, 1, 2]:
+                for ez in [-2, -1, 0, 1, 2]:
+                    [xx, yy, zz] = np.mgrid[ex * M:M + ex * M, ey * M:M + ey * M, ez * M:M + ez * M,]
+                    vec = np.array([xx, yy, zz])
+                    arg_real = np.dot(np.dot(vec.T, curv), vec)
+                    arg_im = 1.j * (xx * xi * np.sin(theta) * np.cos(phi) + yy * xi * np.sin(theta) * np.sin(phi) + np.cos(theta))
+                    arg = arg_real + arg_im
+                    gab += np.exp(arg)
 
-    norm_factor = (2 * 3.14159 * sigma * sigma / (slant1 * slant2) ** 0.5)
+        norm_factor = (2 * 3.14159 * sigma * sigma / (slant1 * slant2) ** 0.5)
 
-    return gab
+        return gab
+
+
+    def morlet_3d(self, xi, j, theta, phi):
+
+        
+        val = self.gabor_2d(xi, j, theta, phi)
+        modulus = self.gabor_2d(0, j, theta, phi)
+        K = np.sum(val) / np.sum(modulus)
+  
+
+        mor = val - K * modulus
+
+        return mor 
 
 
 
