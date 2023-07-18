@@ -431,9 +431,75 @@ class Scatter3D():
         return mor 
 
 
+    def periodize_filter_fft(self, x, res):
+        pass
+
+    def filter_bank(self):
+        pass
+
+
+    #this is my own version to get dimensions right
+    def padded_filter_bank(self):
+        #this is adopted from base_frontend.py in kymatio
+        M = self.M
+        M_padded, N_padded, L_padded = self.compute_padding()
+        self.M = M_padded
+        filters = self.filter_bank()
+        #reset M after computing the filters with the correct padding
+        self.M = M
+
+        return filters
 
 
 
 
+    ###################################
+    ### Utility functions #############
+    ###################################
+
+
+    def subsample_fourier(self, data_batch, k):
+        pass 
+
+
+   def compute_padding(self):
+    #taken from the kymatio utils.py except I am assuming M = N
+    M_padded = ((self.M + 2 ** self.J) // 2 ** self.J + 1) * 2 ** self.J
+    N_padded = ((self.M + 2 ** self.J) // 2 ** self.J + 1) * 2 ** self.J
+    L_padded = ((self.M + 2 ** self.J) // 2 ** self.J + 1) * 2 ** self.J
+    return M_padded, N_padded, L_padded
+
+
+    #utility function
+    def unpad(self, x):
+        #taken from numpy_backend.py in kymatio
+        return x[..., 1:-1, 1:-1, 1:-1]
+
+    #utility function
+    def pad(self, x, pad_size, input_size):
+        pass
+
+    #utility function
+    def rfft(self, x):
+        return tf.signal.fft3d(tf.cast(x, tf.complex64))
+
+    #utility function
+    def irfft(self, x):
+        return tf.math.real(tf.signal.ifft3d(x))
+
+    #utility function
+    def ifft(self, x):
+        return tf.signal.ifft3d(x)
+
+    def cdgmm(self, A, B):
+        return A * B 
+
+    #utility function
+    #not sure I will need this
+    def stack(self, arrays):
+        return tf.stack(arrays, axis=-3)
+
+    def modulus(self, x):
+        return tf.abs(x)
 
 
