@@ -539,7 +539,38 @@ class Scatter3D():
 
     #utility function
     def pad(self, x, pad_size, input_size):
-        pass
+        pad_size = list(pad_size)
+
+        # Clone to avoid passing on modifications.
+        new_pad_size = list(pad_size)
+
+        '''
+        # This handles the case where the padding is equal to the image size.
+        if pad_size[0] == input_size[0]:
+            new_pad_size[0] -= 1
+            new_pad_size[1] -= 1
+        if pad_size[2] == input_size[1]:
+            new_pad_size[2] -= 1
+            new_pad_size[3] -= 1
+        '''
+
+        paddings = [[0, 0]] * len(x.shape[:-2])
+        paddings += [[new_pad_size[0], new_pad_size[1]], [new_pad_size[2], new_pad_size[3]], [new_pad_size[4], new_pad_size[5]] ]
+
+        x_padded = tf.pad(x, paddings, mode="REFLECT")
+
+        '''
+        # Again, special handling for when padding is the same as image size.
+        if pad_size[0] == input_size[0]:
+            x_padded = tf.concat([tf.expand_dims(x_padded[..., 1, :], axis=-2), x_padded, tf.expand_dims(x_padded[..., x_padded.shape[-2] -2, :], axis=-2)], axis=-2)
+        if pad_size[2] == input_size[1]:
+            x_padded = tf.concat([tf.expand_dims(x_padded[..., :, 1], axis=-1), x_padded, tf.expand_dims(x_padded[..., :,  x_padded.shape[-1]-2], axis=-1)], axis=-1)
+        '''
+
+        if pad_size[0] == input_size[0]:
+            print ('Cuation: There is some corner case when pad size equal to image size')
+
+        return x_padded
 
     #utility function
     def rfft(self, x):
