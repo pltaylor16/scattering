@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 from math import pi as pi
 from math import log2 as log2
-from scipy.fft import fft2, ifft2
+from scipy.fft import fft2, ifft2, fftn
 
 
 
@@ -464,7 +464,36 @@ class Scatter3D():
 
 
     def filter_bank(self):
-        pass
+        filters = {}
+        filters['psi'] = []
+
+        for j in range(self.J):
+            for theta in range(self.L):
+                for phi in range(int(self.L)):
+                    psi = {'levels': [], 'j': j, 'theta': theta, 'phi': phi}
+                    #you are here....
+                    #psi_signal = self.morlet_2d(3.0 / 4.0 * np.pi /2**j, j, (int(self.L-self.L/2-1)-theta) * np.pi / self.L)
+                    psi_signal = self.morlet_2d(3.0 / 4.0 * np.pi /2**j, j, (int(self.L-self.L/2-1)-theta) * np.pi / self.L, (int(self.L-self.L/2-1)-theta) * np.pi / self.L)
+
+
+                    psi_signal_fourier = np.real(fftn(psi_signal))
+
+                    psi_levels = []
+                    for res in range(min(j + 1, max(self.J - 1, 1))):
+                        psi_levels.append(self.periodize_filter_fft(psi_signal_fourier, res))
+                    psi['levels'] = psi_levels
+                    filters['psi'].append(psi)
+
+
+        phi_signal = self.gabor_2d(0, self.J-1, 0, 0)
+        phi_signal_fourier = np.real(fftn(phi_signal))
+        # drop the imaginary part, it is zero anyway
+        filters['phi'] = {'levels': [], 'j': self.J}
+        for res in range(self.J):
+            filters['phi']['levels'].append(
+                self.periodize_filter_fft(phi_signal_fourier, res))
+
+        return filters
 
 
 
