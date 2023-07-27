@@ -406,13 +406,13 @@ class Scatter3D():
         for ex in [-2, -1, 0, 1, 2]:
             for ey in [-2, -1, 0, 1, 2]:
                 for ez in [-2, -1, 0, 1, 2]:
-                    [xx, yy, zz] = np.mgrid[ex * M:M + ex * M, ey * M:M + ey * M, ez * M:M + ez * M,]
+                    [xx, yy, zz] = np.mgrid[ex * M:M + ex * M, ey * M:M + ey * M, ez * M:M + ez * M]
                     vec = np.array([xx, yy, zz])
                     arg_real = -(  curv[0, 0] * np.multiply(xx, xx) + curv[1, 1] * np.multiply(yy, yy) + curv[2, 2] * np.multiply(zz, zz) \
                         + (curv[0,1] + curv[1,0]) * np.multiply(xx, yy) \
                         + (curv[0,2] + curv[2,0]) * np.multiply(xx, zz) \
-                        + (curv[1,2] + curv[2,1]) * np.multiply(xx, yy) )
-                    arg_im = 1.j * (xx * xi * np.sin(theta) * np.cos(phi) + yy * xi * np.sin(theta) * np.sin(phi) + np.cos(theta))
+                        + (curv[1,2] + curv[2,1]) * np.multiply(yy, zz) )
+                    arg_im = 1.j * (xx * xi * np.sin(theta) * np.cos(phi) + yy * xi * np.sin(theta) * np.sin(phi) + zz * xi * np.cos(theta))
                     arg = arg_real + arg_im
                     gab += np.exp(arg)
 
