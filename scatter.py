@@ -815,7 +815,7 @@ class Scatter3D():
             #print ('our_S:', len(out_S))
 
             if out_type == 'array':
-                print ('Caution: stack may not be doing the right thing!')
+                #print ('Caution: stack may not be doing the right thing!')
                 out_S = self.stack([x['coef'] for x in out_S])
 
             return out_S
