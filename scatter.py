@@ -549,6 +549,11 @@ class Scatter3D():
         # Clone to avoid passing on modifications.
         new_pad_size = list(pad_size)
 
+        print (tf.shape(x))
+        print (pad_size)
+        print (input_size)
+
+
         '''
         # This handles the case where the padding is equal to the image size.
         if pad_size[0] == input_size[0]:
