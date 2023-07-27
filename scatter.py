@@ -421,6 +421,8 @@ class Scatter3D():
         return gab
 
 
+
+
     def morlet_3d(self, xi, j, theta, phi):
 
         
@@ -613,7 +615,7 @@ class Scatter3D():
             out_S_0, out_S_1, out_S_2 = [], [], []
 
             #this is mine...
-            M_padded, N_padded = self.compute_padding()
+            M_padded, N_padded, L_padded = self.compute_padding()
             pad_size = [(M_padded - self.M) // 2, (M_padded - self.M+1) // 2, (M_padded - self.M) // 2, (M_padded - self.M + 1) // 2, (M_padded - self.M + 1) // 2, (M_padded - self.M + 1) // 2]
             input_size = [self.M, self.M, self.M]
 
