@@ -190,7 +190,7 @@ class Scatter2D():
     #utility function
     def subsample_fourier(self, data_batch, k):
         #k will be 2^j and and x will be (batch_size, M, M)
-        batch_size = np.shape(data_batch)[0]
+        batch_size = tf.shape(data_batch)[0]
         y = tf.reshape(data_batch, shape = (batch_size, k, data_batch.shape[1] // k, k, data_batch.shape[2] // k))
         return tf.math.reduce_mean(y, axis = (1,3))
 
@@ -524,7 +524,7 @@ class Scatter3D():
 
     def subsample_fourier(self, data_batch, k):
         #k will be 2^j and and x will be (batch_size, M, M, M)
-        batch_size = np.shape(data_batch)[0]
+        batch_size = tf.shape(data_batch)[0]
         y = tf.reshape(data_batch, shape = (batch_size, k, data_batch.shape[1] // k, k, data_batch.shape[2] // k, k, data_batch.shape[3] // k))
         return tf.math.reduce_mean(y, axis = (1,3,5))
 
@@ -628,6 +628,8 @@ class Scatter3D():
             U_r = self.pad(x, pad_size, input_size)
 
             U_0_c = self.rfft(U_r)
+
+
 
 
             #first low pass filter
@@ -821,6 +823,12 @@ class Scatter3D():
             return out_S
 
 
+
+    def cast_to_tensor(self, x, phi, psi):
+        x = tf.convert_to_tensor(x)
+        phi = tf.convert_to_tensor(phi)
+        psi = tf.convert_to_tensor(psi)
+        return x, phi, psi
 
 
 
