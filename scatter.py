@@ -382,9 +382,9 @@ class Scatter3D():
 
 
     # Next step is to code up the Gabor wavelets in https://www.sciencedirect.com/science/article/pii/S0262885605000934
-    def gabor_3d(self, xi, j, theta, phi):
+    def gabor_3d(self, xi, j, theta, phi, prefactor):
 
-        sigma = 0.8 * 2. ** j
+        sigma = prefactor * 2. ** j
         M = self.M
         slant1 = self.slant1
         slant2 = self.slant2
@@ -423,11 +423,11 @@ class Scatter3D():
 
 
 
-    def morlet_3d(self, xi, j, theta, phi):
+    def morlet_3d(self, xi, j, theta, phi, prefactor = 0.8):
 
         
-        val = self.gabor_3d(xi, j, theta, phi)
-        modulus = self.gabor_3d(0, j, theta, phi)
+        val = self.gabor_3d(xi, j, theta, phi, prefactor)
+        modulus = self.gabor_3d(0, j, theta, phi, prefactor)
         K = np.sum(val) / np.sum(modulus)
   
 
