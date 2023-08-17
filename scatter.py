@@ -478,7 +478,7 @@ class Scatter3D():
                     psi = {'levels': [], 'j': j, 'theta': theta, 'phi': phi}
                     #you are here....
                     #psi_signal = self.morlet_2d(3.0 / 4.0 * np.pi /2**j, j, (int(self.L-self.L/2-1)-theta) * np.pi / self.L)
-                    psi_signal = self.morlet_3d(3.0 / 4.0 * np.pi /2**j, j, (int(self.L-self.L/2-1)-theta) * np.pi / self.L, (int(self.L-self.L/2-1)-theta) * np.pi / self.L)
+                    psi_signal = self.morlet_3d(3.0 / 4.0 * np.pi /2**j, j, (int(self.L-self.L/2-1)-theta) * np.pi / self.L, (int(self.L-self.L/2-1)-theta) * np.pi / self.L, prefactor = 0.8)
 
 
                     psi_signal_fourier = np.real(fftn(psi_signal))
