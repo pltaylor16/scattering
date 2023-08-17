@@ -490,7 +490,7 @@ class Scatter3D():
                     filters['psi'].append(psi)
 
 
-        phi_signal = self.gabor_3d(0, self.J-1, 0, 0)
+        phi_signal = self.gabor_3d(0, self.J-1, 0, 0, prefactor)
         phi_signal_fourier = np.real(fftn(phi_signal))
         # drop the imaginary part, it is zero anyway
         filters['phi'] = {'levels': [], 'j': self.J}
