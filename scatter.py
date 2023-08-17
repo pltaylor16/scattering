@@ -468,7 +468,7 @@ class Scatter3D():
 
 
 
-    def filter_bank(self):
+    def filter_bank(self, prefactor = 0.8):
         filters = {}
         filters['psi'] = []
 
