@@ -501,6 +501,52 @@ class Scatter3D():
         return filters
 
 
+    #still needs to be tested
+    def filter_bank_mpi(self, prefactor=0.8):
+        import mpi4py
+        comm = MPI.COMM_WORLD
+        rank = comm.Get_rank()
+        size = comm.Get_size()
+
+        filters = {}
+        filters['psi'] = []
+
+        J_range = range(rank, self.J, size)
+        for j in J_range:
+            for theta in range(self.L):
+                for phi in range(int(L)):
+                    psi = {'levels': [], 'j': j, 'theta': theta, 'phi': phi}
+
+                    # Calculate psi_signal as before
+                    # ...
+
+                    psi_signal_fourier = np.real(fftn(psi_signal))
+
+                    psi_levels = []
+                    for res in range(min(j + 1, max(self.J - 1, 1))):
+                        psi_levels.append(periodize_filter_fft(psi_signal_fourier, res))
+                    psi['levels'] = psi_levels
+
+                    comm.barrier()  # Wait for all processes to finish psi_levels computation
+
+                    if rank == 0:
+                        filters['psi'].append(psi)
+
+        # Additional processing for phi_signal as before
+        # ...
+
+        # Perform the necessary collective operations to gather filter information
+        all_filters = comm.gather(filters, root=0)
+
+        if rank == 0:
+            combined_filters = {'psi': [], 'phi': all_filters[0]['phi']}
+            for f in all_filters:
+                combined_filters['psi'].extend(f['psi'])
+            return combined_filters
+        else:
+            return None
+
+
 
     #this is my own version to get dimensions right
     def padded_filter_bank(self):
