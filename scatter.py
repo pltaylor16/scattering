@@ -416,7 +416,7 @@ class Scatter3D():
                     arg = arg_real + arg_im
                     gab += np.exp(arg)
 
-        norm_factor = (2 * 3.14159 * sigma * sigma / (slant1 * slant2) ** 0.5)
+        norm_factor = (2 * 3.14159 * sigma * sigma / (slant1 * slant2))
 
         return gab
 
