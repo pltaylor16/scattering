@@ -4,6 +4,7 @@ import tensorflow as tf
 from math import pi as pi
 from math import log2 as log2
 from scipy.fft import fft2, ifft2, fftn
+import cv2
 
 
 
@@ -502,8 +503,39 @@ class Scatter3D():
 
 
 
+    def rotate_image_numpy(self, image, theta):
+	    # Get the image dimensions
+	    height, width = image.shape[:2]
+	    # Calculate the rotation matrix
+	    rotation_matrix = cv2.getRotationMatrix2D((width / 2, height / 2), theta, 1)
+	    # Apply the rotation to the image
+	    rotated_image = cv2.warpAffine(image, rotation_matrix, (width, height))
+	    
+	    return rotated_image
 
-    
+
+
+    def filter_bank_helix(self, filters_2d, filters_3d, rot_rate):
+    	#filers must be stored as a dictionary output from the 2d code
+    	# we fill the j,theta,psi from a 3d array 
+
+    	new_filters = filters_3d.copy()
+
+    	#let's do the phi filers first
+    	new_filters['phi'] = fitlers_3d['phi']
+
+    	#Get the dimension right for the new filters
+    	for i in range len(filters_3d['psi']):
+    		new_filters['psi'][i] = np.zeros_like(filters_3d['psi'][i])
+
+    	#now fill the empty filters
+    	for k in range(len(filters_2d)):
+    		for j in range(self.M):
+    			new_filters['psi'][k][:,:,j] = self.rotate_image_numpy(filters_2d[k], rot_rate * j)
+
+    	return new_filters
+
+
 
     #still needs to be tested
     def filter_bank_mpi(self, prefactor=0.8):
