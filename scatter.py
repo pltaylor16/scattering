@@ -504,46 +504,46 @@ class Scatter3D():
 
 
     def rotate_image_numpy(self, image, theta):
-	    # Get the image dimensions
-	    height, width = image.shape[:2]
-	    # Calculate the rotation matrix
-	    rotation_matrix = cv2.getRotationMatrix2D((width / 2, height / 2), theta, 1)
-	    # Apply the rotation to the image
-	    rotated_image = cv2.warpAffine(image, rotation_matrix, (width, height))
-	    
-	    return rotated_image
+        # Get the image dimensions
+        height, width = image.shape[:2]
+        # Calculate the rotation matrix
+        rotation_matrix = cv2.getRotationMatrix2D((width / 2, height / 2), theta, 1)
+        # Apply the rotation to the image
+        rotated_image = cv2.warpAffine(image, rotation_matrix, (width, height))
+        
+        return rotated_image
 
 
 
     def filter_bank_helix(self, filters_2d, filters_3d, rot_rate):
-    	#filers must be stored as a dictionary output from the 2d code
-    	# we fill the j,theta,psi from a 3d array 
+        #filers must be stored as a dictionary output from the 2d code
+        # we fill the j,theta,psi from a 3d array 
 
-    	new_filters = filters_3d.copy()
+        new_filters = filters_3d.copy()
 
-    	#let's do the phi filers first
-    	new_filters['phi'] = fitlers_3d['phi']
+        #let's do the phi filers first
+        new_filters['phi'] = fitlers_3d['phi']
 
-    	#Get the dimension right for the new filters
-    	for i in range (len(filters_3d['psi'])):
-    		new_filters['psi'][i]['levels'][0] = np.zeros_like(filters_3d['psi'][i]['levels'][0])
+        #Get the dimension right for the new filters
+        for i in range (len(filters_3d['psi'])):
+            new_filters['psi'][i]['levels'][0] = np.zeros_like(filters_3d['psi'][i]['levels'][0])
 
-    	#now fill the empty filters
-    	for k in range(len(filters_2d)):
-    		for j in range(self.M):
-    			my_set = {1, 2, 3}
-				random_number = random.choice(list(my_set))
-				if random_number == 1:
-    				new_filters['psi'][k][:,:,j]['levels'][0] = self.rotate_image_numpy(np.fft.fftshift(filters_2d[k]), rot_rate * j)
-    			elif random_number == 2:
-    				new_filters['psi'][k][:,j,:]['levels'][0] = self.rotate_image_numpy(np.fft.fftshift(filters_2d[k]), rot_rate * j)
-    			elif random_number == 3:
-    				new_filters['psi'][k][j,:,:]['levels'][0] = self.rotate_image_numpy(np.fft.fftshift(filters_2d[k]), rot_rate * j)
-
-
+        #now fill the empty filters
+        for k in range(len(filters_2d)):
+            for j in range(self.M):
+                my_set = {1, 2, 3}
+                random_number = random.choice(list(my_set))
+                if random_number == 1:
+                    new_filters['psi'][k][:,:,j]['levels'][0] = self.rotate_image_numpy(np.fft.fftshift(filters_2d[k]), rot_rate * j)
+                elif random_number == 2:
+                    new_filters['psi'][k][:,j,:]['levels'][0] = self.rotate_image_numpy(np.fft.fftshift(filters_2d[k]), rot_rate * j)
+                elif random_number == 3:
+                    new_filters['psi'][k][j,:,:]['levels'][0] = self.rotate_image_numpy(np.fft.fftshift(filters_2d[k]), rot_rate * j)
 
 
-    	return new_filters
+
+
+        return new_filters
 
 
 
