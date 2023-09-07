@@ -531,7 +531,17 @@ class Scatter3D():
     	#now fill the empty filters
     	for k in range(len(filters_2d)):
     		for j in range(self.M):
-    			new_filters['psi'][k][:,:,j]['levels'][0] = self.rotate_image_numpy(np.fft.fftshift(filters_2d[k]), rot_rate * j)
+    			my_set = {1, 2, 3}
+				random_number = random.choice(list(my_set))
+				if random_number == 1:
+    				new_filters['psi'][k][:,:,j]['levels'][0] = self.rotate_image_numpy(np.fft.fftshift(filters_2d[k]), rot_rate * j)
+    			elif random_number == 2:
+    				new_filters['psi'][k][:,j,:]['levels'][0] = self.rotate_image_numpy(np.fft.fftshift(filters_2d[k]), rot_rate * j)
+    			elif random_number == 3:
+    				new_filters['psi'][k][j,:,:]['levels'][0] = self.rotate_image_numpy(np.fft.fftshift(filters_2d[k]), rot_rate * j)
+
+
+
 
     	return new_filters
 
