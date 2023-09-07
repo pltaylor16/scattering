@@ -525,13 +525,13 @@ class Scatter3D():
     	new_filters['phi'] = fitlers_3d['phi']
 
     	#Get the dimension right for the new filters
-    	for i in range len(filters_3d['psi']):
-    		new_filters['psi'][i] = np.zeros_like(filters_3d['psi'][i])
+    	for i in range (len(filters_3d['psi'])):
+    		new_filters['psi'][i]['levels'][0] = np.zeros_like(filters_3d['psi'][i]['levels'][0])
 
     	#now fill the empty filters
     	for k in range(len(filters_2d)):
     		for j in range(self.M):
-    			new_filters['psi'][k][:,:,j] = self.rotate_image_numpy(filters_2d[k], rot_rate * j)
+    			new_filters['psi'][k][:,:,j]['levels'][0] = self.rotate_image_numpy(np.fft.fftshift(filters_2d[k]), rot_rate * j)
 
     	return new_filters
 
