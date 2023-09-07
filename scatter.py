@@ -501,6 +501,10 @@ class Scatter3D():
         return filters
 
 
+
+
+    
+
     #still needs to be tested
     def filter_bank_mpi(self, prefactor=0.8):
         import mpi4py
