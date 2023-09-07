@@ -5,6 +5,7 @@ from math import pi as pi
 from math import log2 as log2
 from scipy.fft import fft2, ifft2, fftn
 import cv2
+import random
 
 
 
@@ -522,7 +523,7 @@ class Scatter3D():
         new_filters = filters_3d.copy()
 
         #let's do the phi filers first
-        new_filters['phi'] = fitlers_3d['phi']
+        new_filters['phi'] = filters_3d['phi']
 
         #Get the dimension right for the new filters
         for i in range (len(filters_3d['psi'])):
@@ -534,11 +535,11 @@ class Scatter3D():
                 my_set = {1, 2, 3}
                 random_number = random.choice(list(my_set))
                 if random_number == 1:
-                    new_filters['psi'][k][:,:,j]['levels'][0] = self.rotate_image_numpy(np.fft.fftshift(filters_2d[k]), rot_rate * j)
+                    new_filters['psi'][k]['levels'][0][:,:,j]= self.rotate_image_numpy(np.fft.fftshift(filters_2d[k]), rot_rate * j)
                 elif random_number == 2:
-                    new_filters['psi'][k][:,j,:]['levels'][0] = self.rotate_image_numpy(np.fft.fftshift(filters_2d[k]), rot_rate * j)
+                    new_filters['psi'][k]['levels'][0][:,j,:] = self.rotate_image_numpy(np.fft.fftshift(filters_2d[k]), rot_rate * j)
                 elif random_number == 3:
-                    new_filters['psi'][k][j,:,:]['levels'][0] = self.rotate_image_numpy(np.fft.fftshift(filters_2d[k]), rot_rate * j)
+                    new_filters['psi'][k]['levels'][0][j,:,:] = self.rotate_image_numpy(np.fft.fftshift(filters_2d[k]), rot_rate * j)
 
 
 
