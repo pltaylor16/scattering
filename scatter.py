@@ -700,6 +700,9 @@ class Scatter3D():
 
     def modulus(self, x):
         return tf.abs(x)
+
+    def real_part(self, x):
+        return tf.math.real(x)
     
 
     ###################################
