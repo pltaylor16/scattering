@@ -1069,7 +1069,7 @@ class Scatter3D():
 
 
 
-     def compute_coefs_no_pad_real(self, x, phi, psi, max_order, out_type = 'array'):
+    def compute_coefs_no_pad_real(self, x, phi, psi, max_order, out_type = 'array'):
             
             #taken from /core/scattering2d.py
 
