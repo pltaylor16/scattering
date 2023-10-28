@@ -186,6 +186,19 @@ class Scatter2D():
         return filters
 
 
+    #this is my own version to get dimensions right
+    def padded_filter_bank_multi(self):
+        #this is adopted from base_frontend.py in kymatio
+        M = self.M
+        M_padded, N_padded = self.compute_padding()
+        self.M = M_padded
+        filters = self.filter_bank_multi()
+        #reset M after computing the filters with the correct padding
+        self.M = M
+
+        return filters
+
+
     ###################################
     ### Utility functions #############
     ###################################
