@@ -172,45 +172,51 @@ class Scatter2D():
         return filters
 
 
-	def compute_psi(j, theta, J, L):
-	    psi = {'levels': [], 'j': j, 'theta': theta}
-	    psi_signal = self.morlet_2d(3.0 / 4.0 * np.pi / 2**j, j, (int(L - L / 2 - 1) - theta) * np.pi / L)
-	    psi_signal_fourier = np.real(fft2(psi_signal))
-	    psi_levels = []
-	    for res in range(min(j + 1, max(J - 1, 1))):
-	        psi_levels.append(self.periodize_filter_fft(psi_signal_fourier, res))
-	    psi['levels'] = psi_levels
-	    return psi
 
-	def compute_phi(J):
-	    phi_signal = self.gabor_2d(0, J - 1, 0)
-	    phi_signal_fourier = np.real(fft2(phi_signal))
-	    phi_levels = []
-	    for res in range(J):
-	        phi_levels.append(self.periodize_filter_fft(phi_signal_fourier, res))
-	    return phi_levels
 
-	def filter_bank(self):
-	    filters = {}
-	    filters['psi'] = []
+    def compute_psi(j, theta, J, L):
+        psi = {'levels': [], 'j': j, 'theta': theta}
+        psi_signal = self.morlet_2d(3.0 / 4.0 * np.pi / 2**j, j, (int(L - L / 2 - 1) - theta) * np.pi / L)
+        psi_signal_fourier = np.real(fft2(psi_signal))
+        psi_levels = []
+        for res in range(min(j + 1, max(J - 1, 1))):
+            psi_levels.append(self.periodize_filter_fft(psi_signal_fourier, res))
+        psi['levels'] = psi_levels
+        return psi
 
-	    with multiprocessing.Pool() as pool:
-	        results = []
+    def compute_phi(J):
+        phi_signal = self.gabor_2d(0, J - 1, 0)
+        phi_signal_fourier = np.real(fft2(phi_signal))
+        phi_levels = []
+        for res in range(J):
+            phi_levels.append(self.periodize_filter_fft(phi_signal_fourier, res))
+        return phi_levels
 
-	        for j in range(self.J):
-	            for theta in range(self.L):
-	                results.append(pool.apply_async(compute_psi, args=(j, theta, self.J, self.L)))
+    def filter_bank_multi(self, num_cores=None):
+        filters = {}
+        filters['psi'] = []
 
-	        phi_result = pool.apply_async(compute_phi, args=(self.J,))
+        if num_cores is None:
+            num_cores = multiprocessing.cpu_count()
 
-	        for j in range(self.J):
-	            for theta in range(self.L):
-	                psi = results.pop(0).get()
-	                filters['psi'].append(psi)
+        with multiprocessing.Pool(processes=num_cores) as pool:
+            results = []
 
-	        filters['phi'] = {'levels': phi_result.get(), 'j': self.J}
+            for j in range(self.J):
+                for theta in range(self.L):
+                    results.append(pool.apply_async(compute_psi, args=(j, theta, self.J, self.L)))
 
-	    return filters
+            phi_result = pool.apply_async(compute_phi, args=(self.J,))
+
+            for j in range(self.J):
+                for theta in range(self.L):
+                    psi = results.pop(0).get()
+                    filters['psi'].append(psi)
+
+            filters['phi'] = {'levels': phi_result.get(), 'j': self.J}
+
+        return filters
+
 
     #this is my own version to get dimensions right
     def padded_filter_bank(self):
