@@ -478,7 +478,7 @@ class Scatter3D():
 
 
 
-    def compute_psi(j, theta, phi, J, L, prefactor):
+    def compute_psi(self, j, theta, phi, J, L, prefactor):
         psi = {'levels': [], 'j': j, 'theta': theta, 'phi': phi}
         psi_signal = self.morlet_3d(3.0 / 4.0 * np.pi / 2**j, j, (int(L - L / 2 - 1) - theta) * np.pi / L, (int(L - L / 2 - 1) - phi) * np.pi / L, prefactor)
         psi_signal_fourier = np.real(fftn(psi_signal))
@@ -488,7 +488,7 @@ class Scatter3D():
         psi['levels'] = psi_levels
         return psi
 
-    def compute_phi(J, prefactor):
+    def compute_phi(self, J, prefactor):
         phi_signal = self.gabor_3d(0, J - 1, 0, 0, prefactor)
         phi_signal_fourier = np.real(fftn(phi_signal))
         phi_levels = []
@@ -509,9 +509,9 @@ class Scatter3D():
             for j in range(self.J):
                 for theta in range(self.L):
                     for phi in range(int(self.L)):
-                        results.append(pool.apply_async(compute_psi, args=(j, theta, phi, self.J, self.L, prefactor)))
+                        results.append(pool.apply_async(self.compute_psi, args=(j, theta, phi, self.J, self.L, prefactor)))
 
-            phi_result = pool.apply_async(compute_phi, args=(self.J, prefactor))
+            phi_result = pool.apply_async(self.compute_phi, args=(self.J, prefactor))
 
             for j in range(self.J):
                 for theta in range(self.L):
