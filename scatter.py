@@ -677,12 +677,12 @@ class Scatter3D():
         return filters
 
     #this is my own version to get dimensions right
-    def padded_filter_bank_multi(self):
+    def padded_filter_bank_multi(self, num_cores):
         #this is adopted from base_frontend.py in kymatio
         M = self.M
         M_padded, N_padded, L_padded = self.compute_padding()
         self.M = M_padded
-        filters = self.filter_bank_multi()
+        filters = self.filter_bank_multi(num_cores)
         #reset M after computing the filters with the correct padding
         self.M = M
 
