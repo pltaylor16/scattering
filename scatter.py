@@ -173,51 +173,6 @@ class Scatter2D():
 
 
 
-
-    def compute_psi(j, theta, J, L):
-        psi = {'levels': [], 'j': j, 'theta': theta}
-        psi_signal = self.morlet_2d(3.0 / 4.0 * np.pi / 2**j, j, (int(L - L / 2 - 1) - theta) * np.pi / L)
-        psi_signal_fourier = np.real(fft2(psi_signal))
-        psi_levels = []
-        for res in range(min(j + 1, max(J - 1, 1))):
-            psi_levels.append(self.periodize_filter_fft(psi_signal_fourier, res))
-        psi['levels'] = psi_levels
-        return psi
-
-    def compute_phi(J):
-        phi_signal = self.gabor_2d(0, J - 1, 0)
-        phi_signal_fourier = np.real(fft2(phi_signal))
-        phi_levels = []
-        for res in range(J):
-            phi_levels.append(self.periodize_filter_fft(phi_signal_fourier, res))
-        return phi_levels
-
-    def filter_bank_multi(self, num_cores=None):
-        filters = {}
-        filters['psi'] = []
-
-        if num_cores is None:
-            num_cores = multiprocessing.cpu_count()
-
-        with multiprocessing.Pool(processes=num_cores) as pool:
-            results = []
-
-            for j in range(self.J):
-                for theta in range(self.L):
-                    results.append(pool.apply_async(compute_psi, args=(j, theta, self.J, self.L)))
-
-            phi_result = pool.apply_async(compute_phi, args=(self.J,))
-
-            for j in range(self.J):
-                for theta in range(self.L):
-                    psi = results.pop(0).get()
-                    filters['psi'].append(psi)
-
-            filters['phi'] = {'levels': phi_result.get(), 'j': self.J}
-
-        return filters
-
-
     #this is my own version to get dimensions right
     def padded_filter_bank(self):
         #this is adopted from base_frontend.py in kymatio
@@ -517,6 +472,56 @@ class Scatter3D():
                                 crop[k, l, l2] += x[k + i * int(M / 2 ** res), l + j * int(N / 2 ** res), l2 + j2 * int(L / 2 ** res)]
 
         return crop
+
+
+
+
+
+
+    def compute_psi(j, theta, phi, J, L, prefactor):
+        psi = {'levels': [], 'j': j, 'theta': theta, 'phi': phi}
+        psi_signal = self.morlet_3d(3.0 / 4.0 * np.pi / 2**j, j, (int(L - L / 2 - 1) - theta) * np.pi / L, (int(L - L / 2 - 1) - phi) * np.pi / L, prefactor)
+        psi_signal_fourier = np.real(fftn(psi_signal))
+        psi_levels = []
+        for res in range(min(j + 1, max(J - 1, 1))):
+            psi_levels.append(self.periodize_filter_fft(psi_signal_fourier, res))
+        psi['levels'] = psi_levels
+        return psi
+
+    def compute_phi(J, prefactor):
+        phi_signal = self.gabor_3d(0, J - 1, 0, 0, prefactor)
+        phi_signal_fourier = np.real(fftn(phi_signal))
+        phi_levels = []
+        for res in range(J):
+            phi_levels.append(self.periodize_filter_fft(phi_signal_fourier, res))
+        return phi_levels
+
+    def filter_bank(self, num_cores=None, prefactor=0.8):
+        filters = {}
+        filters['psi'] = []
+
+        if num_cores is None:
+            num_cores = multiprocessing.cpu_count()
+
+        with multiprocessing.Pool(processes=num_cores) as pool:
+            results = []
+
+            for j in range(self.J):
+                for theta in range(self.L):
+                    for phi in range(int(self.L)):
+                        results.append(pool.apply_async(compute_psi, args=(j, theta, phi, self.J, self.L, prefactor)))
+
+            phi_result = pool.apply_async(compute_phi, args=(self.J, prefactor))
+
+            for j in range(self.J):
+                for theta in range(self.L):
+                    for phi in range(int(self.L)):
+                        psi = results.pop(0).get()
+                        filters['psi'].append(psi)
+
+            filters['phi'] = {'levels': phi_result.get(), 'j': self.J}
+
+        return filters
 
 
 
