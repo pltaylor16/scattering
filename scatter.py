@@ -496,7 +496,7 @@ class Scatter3D():
             phi_levels.append(self.periodize_filter_fft(phi_signal_fourier, res))
         return phi_levels
 
-    def filter_bank(self, num_cores=None, prefactor=0.8):
+    def filter_bank_multi(self, num_cores=None, prefactor=0.8):
         filters = {}
         filters['psi'] = []
 
