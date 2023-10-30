@@ -401,8 +401,8 @@ class Scatter3D():
 
 
 
-
-
+    #this is the old code
+    '''
     # Next step is to code up the Gabor wavelets in https://www.sciencedirect.com/science/article/pii/S0262885605000934
     def gabor_3d(self, xi, j, theta, phi, prefactor):
 
@@ -435,6 +435,48 @@ class Scatter3D():
                         + (curv[0,2] + curv[2,0]) * np.multiply(xx, zz) \
                         + (curv[1,2] + curv[2,1]) * np.multiply(yy, zz) )
                     arg_im = 1.j * (xx * xi * np.sin(theta) * np.cos(phi) + yy * xi * np.sin(theta) * np.sin(phi) + zz * xi * np.cos(theta))
+                    arg = arg_real + arg_im
+                    gab += np.exp(arg)
+
+        norm_factor = (2 * 3.14159 * sigma * sigma / (slant1 * slant2))
+
+        return gab
+    '''
+
+    #in the arg_im line we ask what happens to (1,0,0) which give coeffs
+    #we have a composite matrix first doing rotation phi in x,z plane then doing 
+    #rotation theta in x,y plane
+    def gabor_3d(self, xi, j, theta, phi, prefactor):
+
+        sigma = prefactor * 2. ** j
+        M = self.M
+        slant1 = self.slant1
+        slant2 = self.slant2
+
+        gab = np.zeros((M, M, M), np.complex64)
+
+        D = np.array([[1, 0, 0], [0, slant1 * slant1, 0], [0, 0, slant2 * slant2]])
+
+
+        R_phi = np.array([[np.cos(phi), 0, -np.sin(phi)],[0, 1, 0],[np.sin(phi), 0, np.cos(phi)]])
+        R_theta = np.array([[np.cos(theta), -np.sin(theta), 0],[np.sin(theta), np.cos(theta), 0],[0, 0, 1]])
+        R = np.dot(R_theta, R_phi)
+
+
+        R_inv = np.linalg.inv(R)
+        curv = np.dot(R, np.dot(D, R_inv)) / ( 2 * sigma * sigma)
+
+
+        for ex in [-2, -1, 0, 1, 2]:
+            for ey in [-2, -1, 0, 1, 2]:
+                for ez in [-2, -1, 0, 1, 2]:
+                    [xx, yy, zz] = np.mgrid[ex * M:M + ex * M, ey * M:M + ey * M, ez * M:M + ez * M]
+                    vec = np.array([xx, yy, zz])
+                    arg_real = -(  curv[0, 0] * np.multiply(xx, xx) + curv[1, 1] * np.multiply(yy, yy) + curv[2, 2] * np.multiply(zz, zz) \
+                        + (curv[0,1] + curv[1,0]) * np.multiply(xx, yy) \
+                        + (curv[0,2] + curv[2,0]) * np.multiply(xx, zz) \
+                        + (curv[1,2] + curv[2,1]) * np.multiply(yy, zz) )
+                    arg_im = 1.j * (xx * xi * np.cos(theta) * np.cos(phi) + yy * xi * np.sin(theta) * np.cos(phi) + zz * xi * np.sin(phi))
                     arg = arg_real + arg_im
                     gab += np.exp(arg)
 
