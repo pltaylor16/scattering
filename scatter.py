@@ -289,6 +289,7 @@ class Scatter2D():
     ###################################
 
 
+
     def compute_coefs(self, x, phi, psi, max_order, out_type = 'array'):
         
         #taken from /core/scattering2d.py
